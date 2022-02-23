@@ -24,6 +24,10 @@ const argv = require('yargs')
     alias: 'o',
     describe: 'change the output file'
   })
+  .option('ignoreSslWarnings', {
+    alias: 'i',
+    describe: 'ignore tls certificate warnings'
+  })
   .help()
   .argv
 
@@ -85,7 +89,7 @@ function getConfig (argv, questions) {
 }
 
 const juiceShopCtfCli = async () => {
-  console.log()
+  
   console.log(`Generate ${'OWASP Juice Shop'.bold} challenge archive for setting up ${options.ctfdFramework.bold}, ${options.fbctfFramework.bold} or ${options.rtbFramework.bold} score server`)
 
   try {
@@ -93,11 +97,11 @@ const juiceShopCtfCli = async () => {
 
     console.log()
 
-    const [fetchedSecretKey, challenges, countryMapping, vulnSnippets] = await Promise.all([
-      fetchSecretKey(answers.ctfKey),
-      fetchChallenges(answers.juiceShopUrl),
-      fetchCountryMapping(answers.countryMapping),
-      fetchCodeSnippets(answers.juiceShopUrl, answers.insertHintSnippets === options.noHintSnippets)
+      const [fetchedSecretKey, challenges, countryMapping, vulnSnippets] = await Promise.all([
+        fetchSecretKey(answers.ctfKey, argv.ignoreSslWarnings),
+        fetchChallenges(answers.juiceShopUrl, argv.ignoreSslWarnings),
+        fetchCountryMapping(answers.countryMapping, argv.ignoreSslWarnings),
+        fetchCodeSnippets(answers.juiceShopUrl, argv.ignoreSslWarnings, answers.insertHintSnippets === options.noHintSnippets)
     ])
 
     await generateCtfExport(answers.ctfFramework || options.ctfdFramework, challenges, {
